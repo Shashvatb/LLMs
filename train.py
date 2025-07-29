@@ -68,3 +68,19 @@ if __name__ == "__main__":
     print(loss)
 
     print(decoder(m.generate(idx = torch.zeros((1, 1), dtype=torch.long), max_new_tokens=100)[0].tolist()))
+
+    # create a PyTorch optimizer
+    optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
+
+    for steps in range(100): # increase number of steps for good results...
+
+        # sample a batch of data
+        xb, yb = get_batch(training_data, batch_size, block_size)
+
+        # evaluate the loss
+        logits, loss = m(xb, yb)
+        optimizer.zero_grad(set_to_none=True)
+        loss.backward()
+        optimizer.step()
+
+    print(loss.item())
