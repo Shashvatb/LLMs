@@ -1,5 +1,5 @@
 import torch
-
+from models.bigram import BigramLanguageModel
 
 def read_file(file_name):
     with open(file=file_name, mode='r', encoding='utf-8') as f:
@@ -32,12 +32,13 @@ if __name__ == "__main__":
     file = read_file('input.txt')
 
     # get unique characters
-    unique_chars = sorted(set(file))
-    print("size of vocabulary: ", len(unique_chars))
+    vocab = sorted(set(file))
+    vocab_size = len(vocab)
+    print("size of vocabulary: ", vocab_size)
 
     # tokenize the text -> convert characters to machine readable format. can also be called character mapping in this case
     # this is a very basic way of doing this. in more sophisticated algorithms a subword-tokenization is used (google: sentencepiece, gpt2: tiktoken)
-    encoder, decoder = get_encoder_decoder(unique_chars)
+    encoder, decoder = get_encoder_decoder(vocab)
     print("encoded values: ", encoder("hello world"))
     print("decoded values: ", decoder(encoder("hello world")))
 
@@ -60,3 +61,10 @@ if __name__ == "__main__":
     batch_size = 4
     demo_x, demo_y = get_batch(training_data, batch_size, block_size)
     print("context and target values in a single batch: ", demo_x, demo_y)
+
+    m = BigramLanguageModel(vocab_size, vocab_size)
+    logits, loss = m(demo_x, demo_y)
+    print(logits.shape)
+    print(loss)
+
+    print(decoder(m.generate(idx = torch.zeros((1, 1), dtype=torch.long), max_new_tokens=100)[0].tolist()))
