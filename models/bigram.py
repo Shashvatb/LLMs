@@ -78,7 +78,7 @@ class Block(nn.Module):
 
 class BigramLanguageModel(nn.Module):
 
-    def __init__(self, vocab_size, n_embd=None, block_size=None, n_head=None, n_layer=None, dropout=None, device=None):
+    def __init__(self, vocab_size, n_embd=None, block_size=None, n_head=None, n_layer=None, dropout=None, device='cpu'):
         super().__init__()
         # each token directly reads off the logits for the next token from a lookup table
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
@@ -86,7 +86,7 @@ class BigramLanguageModel(nn.Module):
         # self.blocks = nn.Sequential(*[Block(n_embd, n_head, dropout, self.block_size) for _ in range(n_layer)])
         # self.ln_f = nn.LayerNorm(n_embd) # final layer norm
         # self.lm_head = nn.Linear(n_embd, vocab_size)
-        # self.device = device
+        self.device = device
         # self.block_size = block_size
 
 
