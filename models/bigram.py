@@ -78,10 +78,10 @@ class Block(nn.Module):
 
 class BigramLanguageModelBasic(nn.Module):
 
-    def __init__(self, vocab_size, n_embd=None, block_size=None, n_head=None, n_layer=None, dropout=None, device='cpu'):
+    def __init__(self, vocab_size):
         super().__init__()
         # each token directly reads off the logits for the next token from a lookup table
-        self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
+        self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
 
 
     def forward(self, idx, targets=None):

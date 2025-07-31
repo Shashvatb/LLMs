@@ -55,6 +55,7 @@ if __name__ == "__main__":
     max_iters = 10000
     batch_size = 32
     block_size = 8
+    n_embd = 32
 
     # read file
     file = read_file('input.txt')
@@ -92,9 +93,9 @@ if __name__ == "__main__":
 
     # model declaration
     if model == 'bigram_basic':
-        m = BigramLanguageModelBasic(vocab_size, vocab_size, device=device).to(device)
+        m = BigramLanguageModelBasic(vocab_size).to(device)
     elif model == 'bigram':
-        m = BigramLanguageModel(vocab_size, vocab_size, device=device).to(device)
+        m = BigramLanguageModel(vocab_size, n_embd, device=device).to(device)
 
     # model inference
     logits, loss = m(demo_x, demo_y)
@@ -156,11 +157,11 @@ if __name__ == "__main__":
     # coding self attention 
     # it has 3 different trainable layer: key, query and value (KQV)
     # K and Q are used to calculate the weight matrix
-    # we have a hyperparam called number of heads, which tells us the size of the output
-    num_heads = 16
-    key = nn.Linear(C, num_heads, bias=False)
-    query = nn.Linear(C, num_heads, bias=False)
-    value = nn.Linear(C, num_heads, bias=False)
+    # we have a hyperparam called head size, which tells us the size of the output
+    head_size = 16
+    key = nn.Linear(C, head_size, bias=False)
+    query = nn.Linear(C, head_size, bias=False)
+    value = nn.Linear(C, head_size, bias=False)
     k = key(x)   # (B, T, 16)
     q = query(x) # (B, T, 16)
     wei =  q @ k.transpose(-2, -1) # (B, T, 16) @ (B, 16, T) ---> (B, T, T)
