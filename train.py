@@ -50,12 +50,15 @@ def estimate_loss(model, training_data, val_data, eval_iters):
 
 if __name__ == "__main__":
     # training vars
-    model = 'bigram_basic'
-    eval_interval = 1000
-    max_iters = 10000
-    batch_size = 32
-    block_size = 8
-    n_embd = 32
+    model = 'bigram'
+    eval_interval = 500
+    max_iters = 5000
+    batch_size = 64
+    block_size = 256
+    n_embd = 384
+    n_head = 6
+    n_layer = 6
+    lr=1e-4
 
     # read file
     file = read_file('input.txt')
@@ -95,7 +98,7 @@ if __name__ == "__main__":
     if model == 'bigram_basic':
         m = BigramLanguageModelBasic(vocab_size).to(device)
     elif model == 'bigram':
-        m = BigramLanguageModel(vocab_size, n_embd, device=device).to(device)
+        m = BigramLanguageModel(vocab_size, n_embd, block_size, n_head, n_layer, device=device).to(device)
 
     # model inference
     logits, loss = m(demo_x, demo_y)
@@ -105,7 +108,7 @@ if __name__ == "__main__":
     print(decoder(m.generate(idx = torch.zeros((1, 1), dtype=torch.long).to(device), max_new_tokens=100)[0].tolist()))
 
     # create a PyTorch optimizer
-    optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)
+    optimizer = torch.optim.AdamW(m.parameters(), lr=lr)
 
     # training basic char based bigram model
     for iter in range(max_iters):
@@ -122,7 +125,7 @@ if __name__ == "__main__":
         loss.backward()
         optimizer.step()
     print('trained')
-    print(decoder(m.generate(idx = torch.zeros((1, 1), dtype=torch.long).to(device), max_new_tokens=300)[0].tolist()))
+    print(decoder(m.generate(idx = torch.zeros((1, 1), dtype=torch.long).to(device), max_new_tokens=500)[0].tolist()))
 
 
     # understanding self attention
@@ -172,6 +175,21 @@ if __name__ == "__main__":
     v = value(x)
     out = wei @ v
     print('shape of output of self attention: ', out.shape)
+
+    # self attention is just a way of communicating. it doesnt have to be time dependent (if we dont mask fill it, it can be used for anything)
+    # it is just generating information in a directed graph (matrix representation of a directed graph)
+    # the individual nodes (tokens in a block in this case) are just treated as random nodes, hence we need some kind of positional encoding for it
+    # in our self attention head, we add a positional encoding to our token encoding to give it "anchors"
+    # different elements in a batch do not talk to each other which makes it scalable
+    # if we want to do a reverse attention mechanism, instead of masking with lower triangular matrix, we can do it with an upper triangular matrix
+    # if we are masking the future token, it is used as a decoder
+    # if we dont mask anything, it can only be used as an encoder
+    # cross attention: Q is produced from one source and K and V are produced from a different source
+    # Q is usually from decoder and K and V are from encoders
+    # weight values can be really heigh so we need to scale it by sqrt(head_size)
+    # if the values are too huge, it tends towards one hot encoding which is not what we want
+    # we have coded a decoder only model since it is not conditioned. if we wanted a prompt for it, we would need an encoder too
+    # causal self attention is when we are only looking at the history (the way we are doing here)
 
 
 
